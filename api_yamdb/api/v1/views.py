@@ -6,7 +6,9 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from api.models import User
+from reviews.models import User
+from rest_framework.permissions import IsAdminUser
+from .permissions import IsSuperUser
 from django.views.decorators.http import require_http_methods
 from .serializers import CreateUserSerializer, UserSerializer, UserSelfSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -17,33 +19,33 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     http_method_names = ['get', 'post', 'patch', 'delete']
-    permission_classes = [Admin | Superuser]
+    permission_classes = [IsAdminUser | IsSuperUser]
     lookup_field = 'username'
     pagination_class = PageNumberPagination
 
-@action(
-    detail=False,
-    methods=['get', 'patch'],
-    permission_classes=[IsAuthenticated]
-)
-def me_view(self, request):
-    """Обращение к собственным данным пользователя"""
-    user = request.user
-    serializer_class = UserSelfSerializer
+    @action(
+        detail=False,
+        methods=['get', 'patch'],
+        permission_classes=[IsAuthenticated]
+    )
+    def me(self, request):
+        """Обращение к собственным данным пользователя"""
+        user = request.user
+        serializer_class = UserSelfSerializer
 
-    if request.method == 'GET':
-        serializer = serializer_class(user)
-        return Response(serializer.data)
+        if request.method == 'GET':
+            serializer = serializer_class(user)
+            return Response(serializer.data)
 
-    serializer = serializer_class(user, partial=True, data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
+        serializer = serializer_class(user, partial=True, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
 
-    return Response(serializer.errors)
+        return Response(serializer.errors)
 
 
-@require_http_methods(['POST'])
+@require_http_methods(["POST"])
 def user_create_view(request):
     """Создание пользователя - отправка кода на почту"""
     serializer = CreateUserSerializer(data=request.data)
@@ -63,7 +65,7 @@ def user_create_view(request):
     return Response(serializer.data, status=status.HTTPStatus.OK)
 
 
-@require_http_methods(['POST'])
+@require_http_methods(["POST"])
 def request_token(request):
     """Запрос токена с кодом из почты"""
     email = request.context.get('email')

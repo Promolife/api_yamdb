@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from api.models import User
+from reviews.models import User
 from rest_framework.validators import UniqueValidator
 
+class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор пользователи"""
 
-class CreateUserSerializer(serializers.ModelSerializer):
-    """Сериализатор создания пользователя."""
     email = serializers.EmailField(
         validators=[UniqueValidator(queryset=User.objects.all())]
     )
@@ -13,8 +13,15 @@ class CreateUserSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = ('email', 'username')
         model = User
+        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+
+
+class CreateUserSerializer(UserSerializer):
+    """Сериализатор создания пользователя."""
+
+    class Meta:
+        fields = ('email', 'username')
     
     def validate_username(self, value):
         if value == 'me':
@@ -22,9 +29,9 @@ class CreateUserSerializer(serializers.ModelSerializer):
         return value
 
 
-class UserSelfSerializer(serializers.ModelSerializer):
-    pass
+class UserSelfSerializer(UserSerializer):
+    """Сериалайзер собственных данных пользователя"""
 
+    class Meta:
+        readonly_fields = ('role', )
 
-class UserSerializer(serializers.ModelSerializer):
-    pass
