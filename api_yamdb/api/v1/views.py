@@ -1,17 +1,18 @@
-from rest_framework import viewsets
-from django.contrib.auth.tokens import default_token_generator, authenticate
+from django.contrib.auth.tokens import authenticate, default_token_generator
 from django.core.mail import send_mail
-from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination
-from rest_framework import status
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
-from reviews.models import User
-from rest_framework.permissions import IsAdminUser
-from .permissions import IsSuperUser
 from django.views.decorators.http import require_http_methods
-from .serializers import CreateUserSerializer, UserSerializer, UserSelfSerializer
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from reviews.models import User
+
+from .permissions import IsSuperUser
+from .serializers import (CreateUserSerializer, UserSelfSerializer,
+                          UserSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
