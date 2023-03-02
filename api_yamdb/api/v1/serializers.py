@@ -23,6 +23,7 @@ class CreateUserSerializer(UserSerializer):
     """Сериализатор создания пользователя."""
 
     class Meta:
+        model = User
         fields = ('email', 'username')
     
     def validate_username(self, value):
@@ -31,9 +32,19 @@ class CreateUserSerializer(UserSerializer):
         return value
 
 
-class UserSelfSerializer(UserSerializer):
-    """Сериалайзер собственных данных пользователя"""
+class UserSelfSerializer(CreateUserSerializer):
+    """Сериализатор собственных данных пользователя"""
 
     class Meta:
-        readonly_fields = ('role', )
+        model = User
+        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        read_only_fields = ('role', )
+
+
+class UserTokenSerializer(serializers.ModelSerializer):
+    """Сериализатор запроса-выдачи токена"""
+
+    class Meta:
+        model = User
+        fields = ('username', 'confirmation_code')
 
