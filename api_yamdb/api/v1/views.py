@@ -54,7 +54,7 @@ def user_create_view(request):
     serializer = CreateUserSerializer(data=request.data)
     init_email = serializer.initial_data['email']
     init_username = serializer.initial_data['username']
-    
+
     # Ищем пользователя в базе не валидируя данные.
     # Если он там есть - возвращаем ему данные и отправляем код на почту.
     try:

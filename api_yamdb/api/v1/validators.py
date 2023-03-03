@@ -1,6 +1,7 @@
-from rest_framework.validators import UniqueValidator
-from rest_framework.exceptions import ValidationError
 from django.db import DataError
+from rest_framework.exceptions import ValidationError
+from rest_framework.validators import UniqueValidator
+
 
 def qs_exists(queryset):
     try:
