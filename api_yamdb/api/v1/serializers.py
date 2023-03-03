@@ -1,7 +1,7 @@
 from rest_framework import serializers
+from django.db.models import Avg
 from rest_framework.relations import SlugRelatedField
-
-from reviews.models import Category, Comment, Genre, Review, Title, User
+from reviews.models import Comment, Review, Title
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
@@ -9,7 +9,8 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.IntegerField(read_only=True)  # вот тут рейтинг
+    rating = serializers.SerializerMethodField(
+        read_only=True)  # вот тут рейтинг
 
     class Meta:
         model = Title
@@ -22,6 +23,10 @@ class TitleReadSerializer(serializers.ModelSerializer):
             'genre',
             'description',
         )
+
+    def get_rating(self, obj):
+        obj = obj.reviews.all().aggregate(rating=Avg("score"))
+        return obj["rating"]
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -46,7 +51,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
         if self.context['request'].method == 'POST' and is_review_exist:
             raise serializers.ValidationError(
-                'You cannot add review for the same title twice!')
+                'Ты что? Нельзя писать второе ревью!')
 
         return data
 

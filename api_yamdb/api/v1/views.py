@@ -1,9 +1,7 @@
-from django.db.models import Avg
 from django.shortcuts import get_object_or_404, render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, views, viewsets
-
-from reviews.models import Category, Genre, Review, Title, User
+from reviews.models import Review, Title
 
 from .filter import TitleFilter
 from .permissions import (IsAdminOrReadOnly,
@@ -14,9 +12,7 @@ from .serializers import (CommentSerializer, ReviewSerializer,
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для Title"""
-    queryset = Title.objects.all().annotate(
-        rating=Avg('reviews__score')
-    ).order_by('id')  # что тут? Рейтинг
+    queryset = Title.objects.all().order_by('id')
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
