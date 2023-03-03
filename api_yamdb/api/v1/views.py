@@ -1,21 +1,27 @@
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import status, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from reviews.models import User
+from reviews.models import Category, Genre, Title, User
 
+from .mixins import GetPostDelete
 from .permissions import CustomIsAdminUser, IsSuperUser
-from .serializers import (CreateUserSerializer, UserSelfSerializer,
-                          UserSerializer, UserTokenSerializer)
+from .serializers import (
+   CreateUserSerializer, UserSelfSerializer,
+   UserSerializer, UserTokenSerializer,
+   CategorySerializer, GenreSerializer,
+   TitleSerializer
+)
 
 
 class UserViewSet(viewsets.ModelViewSet):
     """Вьюсет обращения к пользователям"""
+    
     queryset = User.objects.all()
     serializer_class = UserSerializer
     http_method_names = ['get', 'post', 'patch', 'delete']
@@ -30,6 +36,7 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def me(self, request):
         """Обращение к собственным данным пользователя"""
+        
         user = request.user
         serializer_class = UserSelfSerializer
 
@@ -49,6 +56,7 @@ class UserViewSet(viewsets.ModelViewSet):
 @permission_classes([AllowAny])
 def user_create_view(request):
     """Создание пользователя - отправка кода на почту"""
+    
     serializer = CreateUserSerializer(data=request.data)
     init_email = serializer.initial_data['email']
     init_username = serializer.initial_data['username']
@@ -94,6 +102,7 @@ def user_create_view(request):
 @permission_classes([AllowAny])
 def request_token_view(request):
     """Запрос токена с кодом из почты"""
+    
     serializer = UserTokenSerializer(data=request.data)
     username = serializer.initial_data['username']
     confirmation_code = serializer.initial_data['confirmation_code']
@@ -108,3 +117,35 @@ def get_tokens_for_user(user):
     return {
         'access': str(refresh.access_token),
     }
+
+
+class CategorieListViewSet(GetPostDelete):
+    """Отображение списка категорий"""
+
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    # permission_classes = (IsAdminUserOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name')
+    pagination_class = PageNumberPagination
+    lookup_field = 'slug'
+
+
+class GenreListViewSet(viewsets.ModelViewSet):
+    """Отображение списка жанров"""
+
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    # permission_classes = (IsAdminUserOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name')
+    pagination_class = PageNumberPagination
+    lookup_field = 'slug'
+
+
+class TitlesListViewSet(viewsets.ModelViewSet):
+    """Отображение списка произведений"""
+
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
+    pagination_class = PageNumberPagination
