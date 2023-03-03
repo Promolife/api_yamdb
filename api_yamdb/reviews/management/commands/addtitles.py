@@ -10,7 +10,6 @@ def CSVImport(filename):
     con = sqlite3.connect(path)
     cur = con.cursor()
     filepath = settings.BASE_DIR / 'static/data/' / filename
-    print(filepath)
     try:
         with open(filepath, 'r', encoding="utf-8") as file:
             read_result = csv.DictReader(file, delimiter=",")
