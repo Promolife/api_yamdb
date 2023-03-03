@@ -90,9 +90,9 @@ class TitleSerializer(serializers.ModelSerializer):
             'name',
             'year',
             'rating',
-            'category',
-            'genre',
             'description',
+            'genre',
+            'category',
         )
 
     def get_rating(self, obj):
