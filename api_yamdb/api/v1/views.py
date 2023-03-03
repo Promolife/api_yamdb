@@ -1,8 +1,5 @@
-from django.contrib.auth import authenticate
-from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from django.views.decorators.http import require_http_methods
 from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
@@ -11,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import User
+
 from .permissions import CustomIsAdminUser, IsSuperUser
 from .serializers import (CreateUserSerializer, UserSelfSerializer,
                           UserSerializer, UserTokenSerializer)
