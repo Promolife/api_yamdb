@@ -29,10 +29,10 @@ def CSVImport(filename):
         cur.executemany(
             (
                 """
-                INSERT INTO reviews_title (
+                INSERT INTO reviews_user (
                     id, username, email, role, bio, first_name, last_name
                     )
-                VALUES (?, ?, ?);
+                VALUES (?, ?, ?, ?, ?, ?, ?);
             """
             ),
             db_result
