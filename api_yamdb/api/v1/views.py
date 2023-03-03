@@ -52,24 +52,44 @@ class UserViewSet(viewsets.ModelViewSet):
 def user_create_view(request):
     """Создание пользователя - отправка кода на почту"""
     serializer = CreateUserSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    email = serializer.validated_data.get('email')
-    username = serializer.validated_data.get('username')
-    serializer.save()
-    confirmation_code = default_token_generator.make_token(
-        User.objects.get(email=email, username=username)
-    )
-    MESSAGE = (f'Приветствую, {username}! '
-               f'Ваш код подтверждения: {confirmation_code}')
-    send_mail(
-    'Confirmation code',
-    MESSAGE,
-    'from@example.com',
-    [email],
-    fail_silently=False,
-    )
-    print('sended')
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    init_email = serializer.initial_data['email']
+    init_username = serializer.initial_data['username']
+    
+    # Ищем пользователя в базе не валидируя данные.
+    # Если он там есть - возвращаем ему данные и отправляем код на почту.
+    try:
+        obj = User.objects.get(username=init_username, email=init_email)
+        confirmation_code = obj.confirmation_code
+        MESSAGE = (f'Приветствую, {init_username}! '
+                f'Ваш код подтверждения: {confirmation_code}')
+        send_mail(
+        'Confirmation code',
+        MESSAGE,
+        'from@example.com',
+        [init_email],
+        fail_silently=False,
+        )
+        data = {"email": init_email, "username": init_username}
+        return Response(data, status=status.HTTP_200_OK)
+    
+    # Если пользователя нет - создаем его в базе и отправляем код на почту.
+    except User.DoesNotExist:    
+        serializer.is_valid(raise_exception=True)
+        valid_email = serializer.validated_data.get('email')
+        valid_username = serializer.validated_data.get('username')
+        serializer.save()
+        user = User.objects.get(email=valid_email, username=valid_username)
+        confirmation_code = user.confirmation_code
+        MESSAGE = (f'Приветствую, {valid_username}! '
+                f'Ваш код подтверждения: {confirmation_code}')
+        send_mail(
+        'Confirmation code',
+        MESSAGE,
+        'from@example.com',
+        [valid_email],
+        fail_silently=False,
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
