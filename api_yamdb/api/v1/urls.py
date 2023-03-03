@@ -5,16 +5,28 @@ from .views import (
     UserViewSet, 
     request_token_view, 
     user_create_view,
-    CategorieListViewSet,
-    GenreListViewSet,
-    TitlesListViewSet,
+    CategoryViewSet,
+    CommentViewSet,
+    GenreViewSet,
+    ReviewViewSet,
+    TitleViewSet,
 )
 
 router = SimpleRouter()
 router.register('users', UserViewSet)
 router.register('categories', CategorieListViewSet, basename='categories')
 router.register('genres', GenreListViewSet, basename='genres')
-router.register('titles', TitlesListViewSet, basename='titles')
+router.register('titles', TitleViewSet, basename='titles')
+router.register(
+    r'titles/(?P<title_id>\d+)/reviews',
+    ReviewViewSet,
+    basename='reviews_list'
+)
+router.register(
+    r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+    CommentViewSet,
+    basename='comments_list'
+)
 
 
 urlpatterns = [
