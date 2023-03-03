@@ -1,8 +1,11 @@
 from django.db.models import Avg
-from rest_framework.relations import SlugRelatedField
+from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from reviews.models import Category,  Comment, Genre, Review, Title, User 
+from reviews.models import (
+    Category, Comment, Genre,
+    Review, Title, User
+)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -17,7 +20,10 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role'
+        )
 
 
 class CreateUserSerializer(UserSerializer):
@@ -26,7 +32,7 @@ class CreateUserSerializer(UserSerializer):
     class Meta:
         model = User
         fields = ('email', 'username')
-    
+
     def validate_username(self, value):
         if value == 'me':
             raise serializers.ValidationError("Недопустимое имя пользователя")
@@ -38,7 +44,10 @@ class UserSelfSerializer(CreateUserSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role'
+        )
         read_only_fields = ('role', )
 
 
@@ -55,6 +64,7 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('name', 'slug', )
         model = Category
+        lookup_field = 'slug'
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -62,9 +72,10 @@ class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('name', 'slug', )
         model = Genre
+        lookup_field = 'slug'
 
 
-class TitleReadSerializer(serializers.ModelSerializer):
+class TitleSerializer(serializers.ModelSerializer):
     """Сериализатор для GET запроса."""
 
     category = CategorySerializer(read_only=True)
