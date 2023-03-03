@@ -3,8 +3,6 @@ from rest_framework.validators import UniqueValidator
 
 from reviews.models import User
 
-from .validators import CustomUniqueValidator
-
 
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор пользователи"""
