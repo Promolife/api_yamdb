@@ -3,28 +3,20 @@ from django.shortcuts import get_object_or_404
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import (
-    AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
-)
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import Category, Genre, Review, Title, User
-
 from .mixins import GetPostDelete
-from .permissions import (
-    CustomIsAdminUser,
-    IsSuperUser,
-    IsAdminUserOrReadOnly,
-    IsAuthorOrModeratorOrAdminOrReadOnly,
-)
-from .serializers import (
-    CreateUserSerializer, UserSelfSerializer,
-    UserSerializer, UserTokenSerializer,
-    CategorySerializer, GenreSerializer,
-    TitleSerializer, CommentSerializer,
-    ReviewSerializer,
-)
+from .permissions import (CustomIsAdminUser, IsAdminUserOrReadOnly,
+                          IsAuthorOrModeratorOrAdminOrReadOnly, IsSuperUser)
+from .serializers import (CategorySerializer, CommentSerializer,
+                          CreateUserSerializer, GenreSerializer,
+                          ReviewSerializer, TitleSerializer,
+                          UserSelfSerializer, UserSerializer,
+                          UserTokenSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -34,6 +26,8 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     http_method_names = ['get', 'post', 'patch', 'delete']
     permission_classes = [CustomIsAdminUser | IsSuperUser]
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
     lookup_field = 'username'
     pagination_class = PageNumberPagination
 
@@ -56,8 +50,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-
-        return Response(serializer.errors)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
@@ -66,8 +59,8 @@ def user_create_view(request):
     """Создание пользователя - отправка кода на почту"""
 
     serializer = CreateUserSerializer(data=request.data)
-    init_email = serializer.initial_data['email']
-    init_username = serializer.initial_data['username']
+    init_email = serializer.initial_data.get('email')
+    init_username = serializer.initial_data.get('username')
 
     # Ищем пользователя в базе не валидируя данные.
     # Если он там есть - возвращаем ему данные и отправляем код на почту.
@@ -115,8 +108,9 @@ def request_token_view(request):
     """Запрос токена с кодом из почты"""
 
     serializer = UserTokenSerializer(data=request.data)
-    username = serializer.initial_data['username']
-    confirmation_code = serializer.initial_data['confirmation_code']
+    serializer.is_valid(raise_exception=True)
+    confirmation_code = serializer.validated_data.get('confirmation_code')
+    username = serializer.validated_data.get('username')
     user = get_object_or_404(User, username=username)
     db_code = user.confirmation_code
     if confirmation_code == db_code:

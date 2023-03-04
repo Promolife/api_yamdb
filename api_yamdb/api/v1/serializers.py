@@ -1,11 +1,7 @@
 from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-
-from reviews.models import (
-    Category, Comment, Genre,
-    Review, Title, User
-)
+from reviews.models import Category, Comment, Genre, Review, Title, User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -14,7 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         validators=[UniqueValidator(queryset=User.objects.all())]
     )
-    username = serializers.CharField(
+    username = serializers.RegexField(regex=r"^[\w.@+-]+\Z", max_length=150,
         validators=[UniqueValidator(queryset=User.objects.all())]
     )
 
@@ -24,6 +20,11 @@ class UserSerializer(serializers.ModelSerializer):
             'username', 'email', 'first_name',
             'last_name', 'bio', 'role'
         )
+    
+    def validate_email(self, value):
+        if len(value) < 254:
+            return value
+        raise serializers.ValidationError("Email не больше 254 символов")
 
 
 class CreateUserSerializer(UserSerializer):
@@ -37,9 +38,9 @@ class CreateUserSerializer(UserSerializer):
         if value == 'me':
             raise serializers.ValidationError("Недопустимое имя пользователя")
         return value
+        
 
-
-class UserSelfSerializer(CreateUserSerializer):
+class UserSelfSerializer(serializers.ModelSerializer):
     """Сериализатор собственных данных пользователя"""
 
     class Meta:
