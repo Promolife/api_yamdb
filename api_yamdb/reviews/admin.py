@@ -1,8 +1,10 @@
 from django.contrib import admin
 
+from .models import Comment, Review, User
 
-from .models import Category, Comment, Genre, Review, Title, User
-
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    readonly_fields = ('confirmation_code', )
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
