@@ -6,6 +6,9 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
+from .validators import year_validator
+
+
 class User(AbstractUser):
     """Модель пользователя"""
 
@@ -75,11 +78,14 @@ class Category(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(
         max_length=50,
-        unique=True
+        unique=True,
+        db_index=True
     )
 
     class Meta:
         ordering = ['name']
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
     def __str__(self):
         return f'{self.name[:15]}'
@@ -91,8 +97,14 @@ class Genre(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(
         max_length=50,
-        unique=True
+        unique=True,
+        db_index=True
     )
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
 
     def __str__(self):
         return f'{self.name[:15]}'
@@ -105,6 +117,7 @@ class Title(models.Model):
         Category,
         on_delete=models.SET_NULL,
         null=True,
+        blank=True,
         related_name='titles',
         verbose_name='Категория'
     )
@@ -116,12 +129,18 @@ class Title(models.Model):
     genre = models.ManyToManyField(
         Genre,
         blank=True,
-        through='GenreTitle',
-        related_name='genres',
+        related_name='titles',
         verbose_name='Жанр'
     )
-    name = models.CharField(max_length=256)
-    year = models.IntegerField()
+    name = models.CharField(
+        'Название',
+        max_length=256,
+        db_index=True
+    )
+    year = models.IntegerField(
+        'Год',
+        validators=(year_validator, )
+    )
 
     class Meta:
         verbose_name = 'Произведение'
@@ -173,14 +192,14 @@ class Comment(models.Model):
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
-        related_name='Comments',
+        related_name='comments',
         verbose_name='Отзыв'
     )
     text = models.TextField()
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='Comments',
+        related_name='author',
         verbose_name='Автор'
     )
     pub_date = models.DateTimeField(
