@@ -201,6 +201,7 @@ class GenreViewSet(GetPostDelete):
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для произведений"""
+
     queryset = Title.objects.all()
     serializer_class = TitlePullSerializer
     permission_classes = (IsAdminOrReadOnly,)
