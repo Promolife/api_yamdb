@@ -70,9 +70,9 @@ def user_create_view(request):
     init_email = serializer.initial_data.get('email')
     init_username = serializer.initial_data.get('username')
 
-    # Прежде я пытался использовать get_object_404
-    # тесты выдавали ошибку
-    # тут как раз этот метод раскрыт с учетом наших потребностей по тз
+    # При использовании метода get_object_404
+    # тесты выдают ошибку, так как по тз ответа 404 недопустим
+    # Этот метод раскрыт с учетом наших потребностей по тз
     try:
         obj = User.objects.get(username=init_username, email=init_email)
         confirmation_code = obj.confirmation_code
