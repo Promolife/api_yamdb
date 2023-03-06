@@ -70,8 +70,9 @@ def user_create_view(request):
     init_email = serializer.initial_data.get('email')
     init_username = serializer.initial_data.get('username')
 
-    # Ищем пользователя в базе не валидируя данные.
-    # Если он там есть - возвращаем ему данные и отправляем код на почту.
+    # Прежде я пытался использовать get_object_404
+    # тесты выдавали ошибку
+    # тут как раз этот метод раскрыт с учетом наших потребностей по тз
     try:
         obj = User.objects.get(username=init_username, email=init_email)
         confirmation_code = obj.confirmation_code
@@ -89,7 +90,6 @@ def user_create_view(request):
         data = {"email": init_email, "username": init_username}
         return Response(data, status=status.HTTP_200_OK)
 
-    # Если пользователя нет - создаем его в базе и отправляем код на почту.
     except User.DoesNotExist:
         serializer.is_valid(raise_exception=True)
         valid_email = serializer.validated_data.get('email')
@@ -115,6 +115,12 @@ def user_create_view(request):
 def request_token_view(request):
     """Запрос токена с кодом из почты"""
 
+    def get_tokens_for_user(user):
+        refresh = RefreshToken.for_user(user)
+        return {
+            'access': str(refresh.access_token),
+        }
+
     serializer = UserTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     confirmation_code = serializer.validated_data.get('confirmation_code')
@@ -124,13 +130,6 @@ def request_token_view(request):
     if confirmation_code == db_code:
         data = get_tokens_for_user(user)
         return Response(data, status=status.HTTP_200_OK)
-
-
-def get_tokens_for_user(user):
-    refresh = RefreshToken.for_user(user)
-    return {
-        'access': str(refresh.access_token),
-    }
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -201,6 +200,7 @@ class GenreViewSet(GetPostDelete):
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для произведений"""
+
     queryset = Title.objects.all()
     serializer_class = TitlePullSerializer
     permission_classes = (IsAdminOrReadOnly,)

@@ -63,6 +63,7 @@ class UserTokenSerializer(serializers.ModelSerializer):
 
 class CategorySerializer(serializers.ModelSerializer):
     """Сериализатор категорий"""
+
     class Meta:
         fields = ('name', 'slug', )
         model = Category
@@ -71,6 +72,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class GenreSerializer(serializers.ModelSerializer):
     """Сериализатор жанров"""
+
     class Meta:
         fields = ('name', 'slug', )
         model = Genre
