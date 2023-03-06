@@ -66,4 +66,3 @@ def post_save(sender, instance, created, **kwargs):
         confirmation_code = default_token_generator.make_token(instance)
         instance.confirmation_code = confirmation_code
         instance.save()
-
