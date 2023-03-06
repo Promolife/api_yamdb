@@ -153,6 +153,7 @@ class Title(models.Model):
 
 class Review(models.Model):
     """Модель для Отзывов"""
+
     text = models.TextField()
     author = models.ForeignKey(
         User,
@@ -189,6 +190,7 @@ class Review(models.Model):
 
 class Comment(models.Model):
     """Модель для Комментариев"""
+
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
