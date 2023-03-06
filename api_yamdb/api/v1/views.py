@@ -115,6 +115,12 @@ def user_create_view(request):
 def request_token_view(request):
     """Запрос токена с кодом из почты"""
 
+    def get_tokens_for_user(user):
+        refresh = RefreshToken.for_user(user)
+        return {
+            'access': str(refresh.access_token),
+        }
+
     serializer = UserTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     confirmation_code = serializer.validated_data.get('confirmation_code')
@@ -124,12 +130,6 @@ def request_token_view(request):
     if confirmation_code == db_code:
         data = get_tokens_for_user(user)
         return Response(data, status=status.HTTP_200_OK)
-
-    def get_tokens_for_user(user):
-        refresh = RefreshToken.for_user(user)
-        return {
-            'access': str(refresh.access_token),
-        }
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
