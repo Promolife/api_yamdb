@@ -69,43 +69,6 @@ def user_create_view(request):
     serializer = CreateUserSerializer(data=request.data)
     init_email = serializer.initial_data.get('email')
     init_username = serializer.initial_data.get('username')
-
-    # При использовании метода get_object_404
-    # тесты выдают ошибку, так как по тз ответа 404 недопустим
-    # Этот метод раскрыт с учетом наших потребностей по тз
-
-    # obj, created = User.objects.get_or_create(email=init_email,
-    #                                     username=init_username)
-    # if created:
-    #     serializer.is_valid(raise_exception=True)
-    #     valid_email = serializer.validated_data.get('email')
-    #     valid_username = serializer.validated_data.get('username')
-    #     serializer.save()
-    #     MESSAGE = (
-    #         f'Приветствую, {valid_username}! '
-    #         f'Ваш код подтверждения: {confirmation_code}')
-    #     send_mail(
-    #         'Confirmation code',
-    #         MESSAGE,
-    #         'from@example.com',
-    #         [valid_email],
-    #         fail_silently=False,
-    #     )
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
-    # confirmation_code = obj.confirmation_code
-    # MESSAGE = (
-    #     f'Приветствую, {init_username}! '
-    #     f'Ваш код подтверждения: {confirmation_code}'
-    # )
-    # send_mail(
-    #     'Confirmation code',
-    #     MESSAGE,
-    #     'from@example.com',
-    #     [init_email],
-    #     fail_silently=False,
-    # )
-    # data = {"email": init_email, "username": init_username}
-    # return Response(data, status=status.HTTP_200_OK)
     obj = User.objects.filter(username=init_username, email=init_email)
     if obj.exists():
         confirmation_code = obj[0].confirmation_code
