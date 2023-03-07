@@ -122,24 +122,23 @@ def user_create_view(request):
         )
         data = {"email": init_email, "username": init_username}
         return Response(data, status=status.HTTP_200_OK)
-    else:
-        serializer.is_valid(raise_exception=True)
-        valid_email = serializer.validated_data.get('email')
-        valid_username = serializer.validated_data.get('username')
-        serializer.save()
-        user = User.objects.get(email=valid_email, username=valid_username)
-        confirmation_code = user.confirmation_code
-        MESSAGE = (
-            f'Приветствую, {valid_username}! '
-            f'Ваш код подтверждения: {confirmation_code}')
-        send_mail(
-            'Confirmation code',
-            MESSAGE,
-            'from@example.com',
-            [valid_email],
-            fail_silently=False,
-        )
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    serializer.is_valid(raise_exception=True)
+    valid_email = serializer.validated_data.get('email')
+    valid_username = serializer.validated_data.get('username')
+    serializer.save()
+    user = User.objects.get(email=valid_email, username=valid_username)
+    confirmation_code = user.confirmation_code
+    MESSAGE = (
+        f'Приветствую, {valid_username}! '
+        f'Ваш код подтверждения: {confirmation_code}')
+    send_mail(
+        'Confirmation code',
+        MESSAGE,
+        'from@example.com',
+        [valid_email],
+        fail_silently=False,
+    )
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
