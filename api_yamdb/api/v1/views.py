@@ -69,6 +69,8 @@ def user_create_view(request):
     serializer = CreateUserSerializer(data=request.data)
     init_email = serializer.initial_data.get('email')
     init_username = serializer.initial_data.get('username')
+    # Выбрали .exists(), так как get_or_create() создаст объект пользователя
+    # без валидации сериализатором
     obj = User.objects.filter(username=init_username, email=init_email)
     if obj.exists():
         confirmation_code = obj[0].confirmation_code
